@@ -16,6 +16,7 @@
     "@schedule-x/events-service": "^2.30.0",
     "@schedule-x/react": "^2.30.0",
     "@schedule-x/theme-default": "^2.30.0",
+    "dayjs": "^1.11.13",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

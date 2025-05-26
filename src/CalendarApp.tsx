@@ -2,17 +2,20 @@ import { useCalendarApp, ScheduleXCalendar } from "@schedule-x/react";
 import { createViewWeek } from "@schedule-x/calendar";
 import { createEventsServicePlugin } from "@schedule-x/events-service";
 import { createCalendarControlsPlugin } from "@schedule-x/calendar-controls";
+import dayjs from "dayjs";
 
 import "@schedule-x/theme-default/dist/index.css";
 import { useEffect, useState } from "react";
 
-const calendarControls = createCalendarControlsPlugin();
-
-const NO_WEEKENDS_NDAYS = 5;
-const WEEKENDS_NDAYS = 7;
+const components = {
+  headerContentLeftAppend: ({ $app }) => {
+    return $app.datePickerState.selectedDate.value;
+  },
+};
 
 export function Calendar() {
   const eventsService = useState(() => createEventsServicePlugin())[0];
+  const calendarsService = useState(() => createCalendarControlsPlugin())[0];
 
   const calendar = useCalendarApp({
     views: [createViewWeek()],
@@ -24,7 +27,7 @@ export function Calendar() {
         end: "2023-12-16",
       },
     ],
-    plugins: [eventsService, calendarControls],
+    plugins: [eventsService, calendarsService],
   });
 
   useEffect(() => {
@@ -32,40 +35,18 @@ export function Calendar() {
     eventsService.getAll();
   }, []);
 
-  const isAppRendered = !!calendarControls.$app;
-
-  const isWeekendsShowing =
-    isAppRendered && calendarControls.getWeekOptions().nDays === WEEKENDS_NDAYS;
-
-  const [_, _set] = useState(0);
-  const forceUpdate = () => _set((v) => (v === 0 ? 1 : 0));
-
-  const handleChangeWeekends = (checked: boolean) => {
-    calendarControls.setWeekOptions({
-      nDays: checked ? WEEKENDS_NDAYS : NO_WEEKENDS_NDAYS,
-    });
-    // forceUpdate();
+  const handleSetDateValue = (value: string) => {
+    calendarsService.setDate(dayjs(value).format("YYYY-MM-DD"));
   };
 
   return (
     <div>
-      <label style={{ display: "flex", alignItems: "center" }}>
-        <span>Show weekened</span>
-        <input
-          type="checkbox"
-          checked={isWeekendsShowing}
-          onChange={(e) => handleChangeWeekends(e.target.checked)}
-        />
-      </label>
+      <input
+        type="date"
+        onChange={(e) => handleSetDateValue(e.target.value)}
+      ></input>
 
-      <ScheduleXCalendar
-        calendarApp={calendar}
-        customComponents={{
-          headerContentLeftAppend: ({ $app }) => {
-            return $app.datePickerState.selectedDate.value;
-          },
-        }}
-      />
+      <ScheduleXCalendar calendarApp={calendar} customComponents={components} />
     </div>
   );
 }
