@@ -5,13 +5,15 @@ import { createCalendarControlsPlugin } from "@schedule-x/calendar-controls";
 import dayjs from "dayjs";
 
 import "@schedule-x/theme-default/dist/index.css";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 const components = {
   headerContentLeftAppend: ({ $app }) => {
     return $app.datePickerState.selectedDate.value;
   },
 };
+
+const WITH_OUTER_COMPONENTS = false;
 
 export function Calendar() {
   const eventsService = useState(() => createEventsServicePlugin())[0];
@@ -35,13 +37,26 @@ export function Calendar() {
     eventsService.getAll();
   }, []);
 
+  const [_, upd] = useState(0);
+  const forceUpdate = () => upd((prev) => (prev === 0 ? 1 : 0));
+
   const handleSetDateValue = (value: string) => {
     calendarsService.setDate(dayjs(value).format("YYYY-MM-DD"));
+    forceUpdate();
   };
+
+  const memoizedComponents = useMemo(() => {
+    return {
+      headerContentLeftAppend: ({ $app }) => {
+        return $app.datePickerState.selectedDate.value;
+      },
+    };
+  }, [_]);
 
   return (
     <div>
       <input
+        style={{ marginBottom: "300px" }}
         type="date"
         onChange={(e) => handleSetDateValue(e.target.value)}
       ></input>
